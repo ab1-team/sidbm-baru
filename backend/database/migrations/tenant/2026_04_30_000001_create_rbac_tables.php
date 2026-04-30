@@ -16,6 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->string('guard_name')->default('web');
             $table->timestamps();
+            $table->softDeletes();
         });
 
         // This assumes menus are in central database. 

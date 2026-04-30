@@ -119,6 +119,7 @@ return new class extends Migration
             $table->decimal('saldo_pokok', 20, 2)->default(0);
             $table->decimal('saldo_jasa', 20, 2)->default(0);
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index('tgl_transaksi');
         });
@@ -134,6 +135,7 @@ return new class extends Migration
             $table->decimal('target_pokok', 20, 2)->default(0);
             $table->decimal('target_jasa', 20, 2)->default(0);
             $table->timestamps();
+            $table->softDeletes();
 
             $table->index('jatuh_tempo');
         });

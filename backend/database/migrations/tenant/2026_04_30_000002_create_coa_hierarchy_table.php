@@ -20,6 +20,7 @@ return new class extends Migration
             $table->string('no_rek_bank')->nullable();
             $table->string('atas_nama_rek')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('akun_level2s', function (Blueprint $table) {
@@ -31,6 +32,7 @@ return new class extends Migration
             $table->string('no_rek_bank')->nullable();
             $table->string('atas_nama_rek')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
 
         Schema::create('akun_level3s', function (Blueprint $table) {
@@ -42,6 +44,7 @@ return new class extends Migration
             $table->string('no_rek_bank')->nullable();
             $table->string('atas_nama_rek')->nullable();
             $table->timestamps();
+            $table->softDeletes();
         });
     }
 
