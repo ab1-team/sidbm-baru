@@ -50,22 +50,29 @@ class MigrateLegacyData extends Command
         $this->info("========================================");
 
         // 1. Create or Find Tenant
-        $tenantId = 'tenant_' . $location->id;
+        $slug = strtolower(str_replace(' ', '_', $name));
+        $tenantId = "{$slug}_{$location->id}";
         $tenant = Tenant::find($tenantId);
 
         if (!$tenant) {
-            $this->line("Creating tenant for {$name}...");
+            $this->line("Creating tenant for {$name} (ID: {$tenantId})...");
             $tenant = Tenant::create([
                 'id' => $tenantId,
                 'name' => $name,
                 'location_id' => $location->id,
             ]);
-            // Use location ID as subdomain
-            $tenant->domains()->create(['domain' => $location->id . '.sidbm.test']);
+            
+            // Use the slug as subdomain (e.g. tegalrejo.new-sidbm.test)
+            $tenant->domains()->create(['domain' => $slug . '.new-sidbm.test']);
 
-            // Run migrations for this tenant
+            // Run migrations and seed for this tenant
             $this->line("Running migrations for {$tenantId}...");
             \Illuminate\Support\Facades\Artisan::call('tenants:migrate', [
+                '--tenants' => [$tenantId],
+            ]);
+
+            $this->line("Seeding initial data for {$tenantId}...");
+            \Illuminate\Support\Facades\Artisan::call('tenants:seed', [
                 '--tenants' => [$tenantId],
             ]);
         }
@@ -223,7 +230,7 @@ class MigrateLegacyData extends Command
                     'tempat_lahir' => $data['tempat_lahir'] ?? null,
                     'tgl_lahir' => $data['tgl_lahir'] ?? null,
                     'alamat' => $data['alamat'] ?? null,
-                    'desa' => $data['desa'] ?? null,
+                    'desa_id' => $this->resolveDesaId($data['desa'] ?? null),
                     'hp' => $data['hp'] ?? null,
                     'kk' => $data['kk'] ?? null,
                     'nik_penjamin' => $data['nik_penjamin'] ?? null,
@@ -241,7 +248,7 @@ class MigrateLegacyData extends Command
                     'id' => $data['id'],
                     'kd_kelompok' => $data['kd_kelompok'],
                     'nama_kelompok' => $data['nama_kelompok'],
-                    'desa' => $data['desa'],
+                    'desa_id' => $this->resolveDesaId($data['desa'] ?? null),
                     'alamat_kelompok' => $data['alamat_kelompok'] ?? null,
                     'telpon' => $data['telpon'] ?? null,
                     'tgl_berdiri' => $data['tgl_berdiri'] ?? null,
@@ -372,5 +379,21 @@ class MigrateLegacyData extends Command
             default:
                 return $data;
         }
+    }
+
+    protected function resolveDesaId($namaDesa)
+    {
+        if (!$namaDesa) return null;
+
+        $desa = DB::table('desa')->where('nama_desa', $namaDesa)->first();
+        if (!$desa) {
+            return DB::table('desa')->insertGetId([
+                'nama_desa' => $namaDesa,
+                'kd_desa' => 'LGC_' . strtoupper(substr(md5($namaDesa), 0, 8)),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+        }
+        return $desa->id;
     }
 }

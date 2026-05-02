@@ -1,7 +1,7 @@
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
-  /* config options here */
+  allowedDevOrigins: ['*.new-sidbm.test', 'new-sidbm.test'],
 };
 
 export default nextConfig;
